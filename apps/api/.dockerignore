@@ -1,0 +1,10 @@
+# Docker build context is apps/api — everything here is shipped into the image.
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.venv/
+venv/
+*.egg-info/
+.chroma/
+.cache/

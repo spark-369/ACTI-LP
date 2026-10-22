@@ -1,0 +1,42 @@
+name: Build & Push
+on:
+  push: { branches: [main] }
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        component: [api, web]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Resolve context
+        id: ctx
+        run: |
+          case "${{ matrix.component }}" in
+            # The API image needs BOTH apps/api/ and the repo-root ml/ tree
+            # (prompts + versioned schema), so it is built from the repo root
+            # with an explicit Dockerfile path.
+            api) echo "context=." >> $GITHUB_OUTPUT
+                 echo "file=apps/api/Dockerfile" >> $GITHUB_OUTPUT ;;
+            web) echo "context=apps/web" >> $GITHUB_OUTPUT
+                 echo "file=apps/web/Dockerfile" >> $GITHUB_OUTPUT ;;
+          esac
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - uses: docker/build-push-action@v6
+        with:
+          context: ${{ steps.ctx.outputs.context }}
+          file: ${{ steps.ctx.outputs.file }}
+          push: true
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/acti-lp-${{ matrix.component }}:${{ github.sha }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/acti-lp-${{ matrix.component }}:latest
+      - uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ secrets.DOCKERHUB_USERNAME }}/acti-lp-${{ matrix.component }}:${{ github.sha }}
+          exit-code: '1'
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true

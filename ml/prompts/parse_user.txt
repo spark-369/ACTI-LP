@@ -1,0 +1,11 @@
+=== SIMILAR HISTORICAL LOGS (reference only, not the log under analysis) ===
+{context}
+=== END HISTORICAL LOGS ===
+
+Analyse ONLY the raw log below.
+
+=== BEGIN UNTRUSTED RAW LOG ===
+{raw_log}
+=== END UNTRUSTED RAW LOG ===
+
+JSON:

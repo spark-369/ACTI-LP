@@ -1,0 +1,46 @@
+name: CI
+on: [pull_request, push]
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.11" }
+      - name: Install dependencies
+        run: |
+          pip install -r apps/api/requirements.txt
+          pip install pytest pytest-asyncio ruff
+      - name: Lint
+        run: ruff check apps/api/app
+      - name: Unit tests
+        # Run from apps/api so pydantic-settings resolves apps/api/.env.
+        # PYTHONPATH is set in the command (not `env:`) because a relative value
+        # in `env` resolves against the workspace root, not `working-directory`.
+        working-directory: apps/api
+        run: PYTHONPATH=. pytest ../../tests/unit -v
+
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: "20" }
+      - name: Install dependencies
+        run: |
+          cd apps/web
+          if [ -f package-lock.json ]; then npm ci; else npm install; fi
+      - run: cd apps/web && npm run lint
+      - run: cd apps/web && npm run build
+
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: fs
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: "0"

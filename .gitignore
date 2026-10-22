@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+
+# Node
+node_modules/
+dist/
+
+# Runtime data
+.chroma/
+.cache/
+*.log
+
+# NOTE: apps/api/.env is intentionally committed (image-baked secrets).
+# apps/web/.env is also committed (VITE_API_URL only).

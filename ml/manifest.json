@@ -1,0 +1,24 @@
+{
+  "name": "acti-lp-ml-artifacts",
+  "description": "Prompt templates and versioned Outlines output schemas.",
+  "prompts": {
+    "system": "prompts/system.txt",
+    "parse_user": "prompts/parse_user.txt"
+  },
+  "schemas": {
+    "log_parse": {
+      "path": "schemas/log_parse.schema.json",
+      "pydantic": "apps/api/app/schemas/__init__.py::LogParseResult",
+      "version": 2,
+      "changes_v2": "attack_type and mitre_tactic are closed enums; mitre_tactic additionally allows '' for 'none'."
+    }
+  },
+  "model": "Qwen/Qwen2.5-0.5B-Instruct",
+  "structured_output": "outlines.Generator(model, LogParseResult)  # Outlines >= 1.0",
+  "outlines_api": {
+    "version": ">=1.0",
+    "load": "outlines.from_transformers(AutoModelForCausalLM, AutoTokenizer)",
+    "generate": "generator(prompt, max_new_tokens=N) -> str   # output type bound at construction; do NOT re-pass it",
+    "parse": "LogParseResult.model_validate_json(raw_str)"
+  }
+}
